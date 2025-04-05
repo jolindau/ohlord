@@ -25,21 +25,32 @@ def get_worksheet():
     try:
         # Parse the JSON credentials string using json.loads()
         credentials_dict = json.loads(credentials_str)
-        
+
         # Now use the parsed dictionary to authorize the credentials
         creds = ServiceAccountCredentials.from_json_keyfile_dict(
             credentials_dict,
             ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         )
 
-        # Authorize client and get the sheet
+        # Authorize client and try opening the Google Sheet
         client = gspread.authorize(creds)
+
+        # Debugging: Check if the client is successfully authorized
+        st.write("Successfully authenticated with Google Sheets API.")
+
+        # Try opening the spreadsheet by its ID
         sheet = client.open_by_key(SHEET_ID)
 
         # Debugging: Check if the sheet is being fetched correctly
-        st.write(f"Successfully accessed the sheet: {sheet.title}")
+        st.write(f"Successfully accessed the spreadsheet: {sheet.title}")
+
+        # Try accessing the worksheet
+        worksheet = sheet.worksheet(SHEET_NAME)
         
-        return sheet.worksheet(SHEET_NAME)
+        # Debugging: Check if worksheet is fetched successfully
+        st.write(f"Successfully accessed worksheet: {worksheet.title}")
+        
+        return worksheet
     
     except gspread.exceptions.SpreadsheetNotFound:
         st.error(f"Spreadsheet with ID {SHEET_ID} not found.")
@@ -54,9 +65,8 @@ def get_worksheet():
         return None
 
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"An unexpected error occurred: {str(e)}")
         return None
-
 
 
 ws = get_worksheet()
