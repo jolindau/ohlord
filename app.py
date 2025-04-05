@@ -21,6 +21,7 @@ TOTAL_MINUTES = 24 * 60
 def get_worksheet():
     # Accessing the credentials (raw string) from Streamlit secrets
     credentials_str = st.secrets["google"]["credentials"]
+    st.write("Credentials String:", credentials_str)
 
     try:
         # Parse the JSON credentials string using json.loads()
