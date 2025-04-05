@@ -68,7 +68,6 @@ def get_worksheet():
         st.error(f"An unexpected error occurred: {str(e)}")
         return None
 
-
 ws = get_worksheet()
 
 def load_data():
