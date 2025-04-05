@@ -8,9 +8,18 @@ SHEET_ID = '1QxDWmTzj6LM4ipierMGsLNlcJh5J2eUe_gF_IK3rceY'
 SHEET_NAME = 'Sheet1'
 TOTAL_MINUTES = 24 * 60
 
+import streamlit as st
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import json
+
+SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'  # Make sure this is the correct Sheet ID
+SHEET_NAME = 'Sheet1'  # Ensure that this is the correct sheet name
+TOTAL_MINUTES = 24 * 60
+
 @st.cache_resource
 def get_worksheet():
-    # Access the credentials (raw string) from Streamlit secrets
+    # Accessing the credentials (raw string) from Streamlit secrets
     credentials_str = st.secrets["google"]["credentials"]
 
     try:
@@ -23,13 +32,31 @@ def get_worksheet():
             ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         )
 
+        # Authorize client and get the sheet
         client = gspread.authorize(creds)
         sheet = client.open_by_key(SHEET_ID)
+
+        # Debugging: Check if the sheet is being fetched correctly
+        st.write(f"Successfully accessed the sheet: {sheet.title}")
+        
         return sheet.worksheet(SHEET_NAME)
+    
+    except gspread.exceptions.SpreadsheetNotFound:
+        st.error(f"Spreadsheet with ID {SHEET_ID} not found.")
+        return None
+    
+    except gspread.exceptions.WorksheetNotFound:
+        st.error(f"Worksheet {SHEET_NAME} not found.")
+        return None
     
     except json.JSONDecodeError as e:
         st.error(f"Failed to parse the JSON credentials: {str(e)}")
         return None
+
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        return None
+
 
 
 ws = get_worksheet()
