@@ -2,18 +2,29 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import json
 
-SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'
+SHEET_ID = '1QxDWmTzj6LM4ipierMGsLNlcJh5J2eUe_gF_IK3rceY'
 SHEET_NAME = 'Sheet1'
 TOTAL_MINUTES = 24 * 60
 
 @st.cache_resource
 def get_worksheet():
+    # Define the scope for Google Sheets API
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    
+    # Load credentials from Streamlit's secrets
+    creds_json = st.secrets["google"]["credentials"]
+    creds_dict = json.loads(creds_json)
+    
+    # Use credentials to authorize with Google Sheets API
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    
+    # Authorize and get the worksheet
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SHEET_ID)
     return sheet.worksheet(SHEET_NAME)
+
 
 ws = get_worksheet()
 
