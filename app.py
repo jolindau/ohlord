@@ -10,18 +10,26 @@ TOTAL_MINUTES = 24 * 60
 
 @st.cache_resource
 def get_worksheet():
-    # Accessing credentials from Streamlit secrets (as a string)
+    # Access the credentials (raw string) from Streamlit secrets
     credentials_str = st.secrets["google"]["credentials"]
 
-    # Pass the raw credentials string directly to the credentials loader
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        json.loads(credentials_str), 
-        ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    )
+    try:
+        # Parse the JSON credentials string using json.loads()
+        credentials_dict = json.loads(credentials_str)
+        
+        # Now use the parsed dictionary to authorize the credentials
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            credentials_dict,
+            ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        )
+
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(SHEET_ID)
+        return sheet.worksheet(SHEET_NAME)
     
-    client = gspread.authorize(creds)
-    sheet = client.open_by_key(SHEET_ID)
-    return sheet.worksheet(SHEET_NAME)
+    except json.JSONDecodeError as e:
+        st.error(f"Failed to parse the JSON credentials: {str(e)}")
+        return None
 
 
 ws = get_worksheet()
